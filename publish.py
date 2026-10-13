@@ -36,7 +36,9 @@ IG_USER_ID = os.getenv("IG_BUSINESS_ACCOUNT_ID")
 ACCESS_TOKEN = os.getenv("FB_PAGE_ACCESS_TOKEN")
 PUBLIC_HOST = os.getenv("PUBLIC_VIDEO_HOST_URL", "")
 
-BASE_URL = f"https://graph.facebook.com/{GRAPH_VERSION}"
+# Como la cuenta se conectó con "Business Login for Instagram" (sin Página de
+# Facebook), el host correcto es graph.instagram.com, no graph.facebook.com.
+BASE_URL = f"https://graph.instagram.com/{GRAPH_VERSION}"
 SCHEDULE_PATH = pathlib.Path("data/schedule.json")
 
 

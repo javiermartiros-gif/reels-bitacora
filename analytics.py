@@ -30,7 +30,9 @@ load_dotenv()
 
 GRAPH_VERSION = os.getenv("GRAPH_API_VERSION", "v22.0")
 ACCESS_TOKEN = os.getenv("FB_PAGE_ACCESS_TOKEN")
-BASE_URL = f"https://graph.facebook.com/{GRAPH_VERSION}"
+# Mismo motivo que en publish.py: cuenta conectada vía Business Login for
+# Instagram, así que el host es graph.instagram.com.
+BASE_URL = f"https://graph.instagram.com/{GRAPH_VERSION}"
 SCHEDULE_PATH = pathlib.Path("data/schedule.json")
 
 INSIGHT_METRICS = "plays,reach,saved,shares,comments,likes"
