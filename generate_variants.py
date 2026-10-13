@@ -25,10 +25,30 @@ import random
 import subprocess
 import sys
 
-FONT_SIZE = 64
+DEFAULT_FONT_PATH = "/app/fonts/Poppins-ExtraBold.ttf"
 FONT_COLOR = "white"
 BOX_COLOR = "black@0.55"
 TEXT_Y = "h*0.08"  # near the top, standard hook placement
+FONT_SIZE_RATIO = 0.052  # tamaño del hook como proporción de la altura real del vídeo
+
+
+def _probe_height(video_path: pathlib.Path) -> int:
+    """Lee la altura real del vídeo para calcular un tamaño de fuente
+    proporcional, en vez de usar un tamaño fijo que se ve mal en resoluciones
+    distintas (demasiado pequeño en vídeos verticales de alta resolución)."""
+    result = subprocess.run(
+        [
+            "ffprobe", "-v", "error", "-select_streams", "v:0",
+            "-show_entries", "stream=height",
+            "-of", "csv=p=0",
+            str(video_path),
+        ],
+        capture_output=True, text=True,
+    )
+    try:
+        return int(result.stdout.strip())
+    except ValueError:
+        return 1920  # fallback razonable para vídeo vertical 9:16
 
 
 def _escape_drawtext(text: str) -> str:
@@ -46,7 +66,7 @@ def build_variant(
     hook_text: str,
     out_path: pathlib.Path,
     variant_index: int,
-    font_path: str | None = None,
+    font_path: str | None = DEFAULT_FONT_PATH,
 ) -> None:
     """Render one variant with its hook burned in and a small randomized edit."""
     rng = random.Random(variant_index)  # deterministic per-variant, still varied
@@ -57,15 +77,19 @@ def build_variant(
     brightness = round(rng.uniform(-0.03, 0.03), 3)
     saturation = round(rng.uniform(0.97, 1.05), 3)
 
+    video_height = _probe_height(video_path)
+    font_size = max(36, round(video_height * FONT_SIZE_RATIO))
+
     safe_text = _escape_drawtext(hook_text)
-    font_clause = f":fontfile='{font_path}'" if font_path else ""
+    use_font = font_path if font_path and pathlib.Path(font_path).exists() else None
+    font_clause = f":fontfile='{use_font}'" if use_font else ""
 
     drawtext = (
         f"drawtext=text='{safe_text}'{font_clause}:"
-        f"fontsize={FONT_SIZE}:fontcolor={FONT_COLOR}:"
-        f"box=1:boxcolor={BOX_COLOR}:boxborderw=20:"
+        f"fontsize={font_size}:fontcolor={FONT_COLOR}:"
+        f"box=1:boxcolor={BOX_COLOR}:boxborderw=24:"
         f"x=(w-text_w)/2:y={TEXT_Y}:"
-        "line_spacing=8"
+        "line_spacing=10"
     )
     eq = f"eq=brightness={brightness}:saturation={saturation}"
     vf = f"{eq},{drawtext}"
@@ -75,8 +99,14 @@ def build_variant(
         "-ss", str(start_trim),
         "-i", str(video_path),
         "-vf", vf,
-        "-c:v", "libx264", "-preset", "medium", "-crf", "20",
-        "-c:a", "aac", "-b:a", "128k",
+        # Calidad alta: crf bajo + preset slow, para que la segunda
+        # compresión (quemar el hook) no se note frente al vídeo que ya
+        # viene bien procesado desde Edits. El audio se copia tal cual,
+        # sin volver a comprimirlo.
+        "-c:v", "libx264", "-preset", "slow", "-crf", "16",
+        "-pix_fmt", "yuv420p",
+        "-c:a", "copy",
+        "-movflags", "+faststart",
         str(out_path),
     ]
     result = subprocess.run(cmd, capture_output=True, text=True)
