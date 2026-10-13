@@ -5,6 +5,8 @@
     "video_file": "out/6993ccca/variant_01_f3d679.mp4",
     "audio": "addiction LONOWN, Asenssia",
     "scheduled_for": "2026-10-13T08:30:00",
-    "status": "pending"
+        "status": "published",
+        "published_at": "2026-10-13T12:35:00",
+        "media_id": "18033703799666707"
   }
 ]
