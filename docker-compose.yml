@@ -1,0 +1,12 @@
+services:
+  bitacora:
+    build: .
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    volumes:
+      - ./uploads:/app/uploads
+      - ./out:/app/out
+      - ./data:/app/data
+    restart: unless-stopped

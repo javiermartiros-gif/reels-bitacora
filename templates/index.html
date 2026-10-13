@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Nuevo lote — Bitácora{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <h1>Nuevo lote</h1>
+  <p>Sube el vídeo ya editado en Edits, anota el audio y los hooks. El resto —variantes, reparto de fechas y publicación— corre solo.</p>
+</div>
+
+<form method="POST" action="{{ url_for('submit') }}" enctype="multipart/form-data">
+
+  <div class="entry">
+    <div class="entry-num">01</div>
+    <label for="video-input">Vídeo editado</label>
+    <label class="dropzone" id="dropzone" for="video-input">
+      <span id="dz-label">Arrastra el .mp4 aquí, o haz clic para elegirlo</span>
+      <div class="filename" id="dz-filename"></div>
+      <input type="file" id="video-input" name="video" accept="video/mp4" required>
+    </label>
+  </div>
+
+  <div class="entry">
+    <div class="entry-num">02</div>
+    <label for="audio_name">Audio usado</label>
+    <input type="text" id="audio_name" name="audio_name" placeholder="p. ej. Original audio — @nombredelcreador" required>
+    <p class="hint">Lo eliges en el panel "Audio en tendencia" de tu Dashboard Profesional antes de editar. Aquí solo se anota para cruzarlo con el rendimiento después.</p>
+  </div>
+
+  <div class="entry">
+    <div class="entry-num">03</div>
+    <label for="hooks">Hooks — uno por línea, una variante por hook</label>
+    <textarea id="hooks" name="hooks" placeholder="Un hook por línea..."></textarea>
+    <div class="chip-row">
+      {% for h in hook_suggestions %}
+      <button type="button" class="chip" onclick="addHook('{{ h|replace("'", "\\'") }}')">{{ h }}</button>
+      {% endfor %}
+    </div>
+    <p class="hint">Clic en una sugerencia para añadirla. Son plantillas de partida, edítalas a tu voz.</p>
+  </div>
+
+  <div class="entry">
+    <div class="entry-num">04</div>
+    <label for="days_span">Días para repartir el lote</label>
+    <input type="text" id="days_span" name="days_span" value="14" style="max-width: 100px;">
+  </div>
+
+  <button type="submit" class="submit-btn">Generar y programar</button>
+</form>
+
+<script>
+  const input = document.getElementById('video-input');
+  const label = document.getElementById('dz-label');
+  const filename = document.getElementById('dz-filename');
+  const dz = document.getElementById('dropzone');
+
+  input.addEventListener('change', () => {
+    if (input.files.length) {
+      label.textContent = 'Vídeo listo:';
+      filename.textContent = input.files[0].name;
+    }
+  });
+
+  ['dragover', 'dragleave', 'drop'].forEach(evt => {
+    dz.addEventListener(evt, e => {
+      e.preventDefault();
+      dz.classList.toggle('drag-over', evt === 'dragover');
+    });
+  });
+  dz.addEventListener('drop', e => {
+    if (e.dataTransfer.files.length) {
+      input.files = e.dataTransfer.files;
+      input.dispatchEvent(new Event('change'));
+    }
+  });
+
+  function addHook(text) {
+    const ta = document.getElementById('hooks');
+    ta.value = ta.value.trim().length ? ta.value.trim() + "\n" + text : text;
+  }
+</script>
+{% endblock %}

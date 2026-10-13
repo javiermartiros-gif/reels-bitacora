@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Calendario — Bitácora{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <h1>Calendario</h1>
+  <p>Cola de publicación. El estado se actualiza solo cuando GitHub Actions publica cada reel programado.</p>
+</div>
+
+{% if entries %}
+<div class="log">
+  <div class="log-row head">
+    <div>variante</div>
+    <div>fecha</div>
+    <div>hook</div>
+    <div>audio</div>
+    <div>estado</div>
+  </div>
+  {% for e in entries %}
+  <div class="log-row">
+    <div class="log-idx">#{{ '%02d' % e.index }}</div>
+    <div class="log-date">{{ e.scheduled_for[:16] | replace('T', ' ') }}</div>
+    <div class="log-hook">{{ e.hook }}</div>
+    <div class="log-audio">{{ e.audio }}</div>
+    <div class="status {{ e.status }}">{{ e.status }}</div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">Todavía no hay ninguna publicación programada. Empieza en "Nuevo lote".</div>
+{% endif %}
+
+{% endblock %}

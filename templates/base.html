@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Bitácora de Reels{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="shell">
+    <aside class="rail">
+      <div class="brand">Bitácora</div>
+      <div class="brand-sub">reels de prueba — kitesurf</div>
+      <nav>
+        <a href="{{ url_for('index') }}" class="{{ 'active' if active == 'nuevo' else '' }}">Nuevo lote</a>
+        <a href="{{ url_for('calendario') }}" class="{{ 'active' if active == 'calendario' else '' }}">Calendario</a>
+      </nav>
+    </aside>
+    <main>
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}{% for m in messages %}<div class="flash">{{ m }}</div>{% endfor %}{% endif %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</body>
+</html>
